@@ -1,6 +1,14 @@
 use serde::Deserialize;
 use serde_xml_rs::from_str;
-use std::error::Error;
+use anyhow::Result;
+
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename = "ram:Something")]
+struct Something
+{
+    #[serde(rename = "ram:InSomethingElse")]
+    in_something_else: String,
+}
 
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename = "Invoice")]
@@ -14,9 +22,11 @@ struct Invoice
     content: String,
     #[serde(rename = "ram:SubjectCode")]  
     subject_code: String,
+    #[serde(rename = "ram:Something")]
+    something: Something,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
 
     let xml = r#"
 <Invoice xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">
@@ -27,10 +37,13 @@ Am Weidenring 52 - 54
 61352 Bad Homburg
 Deutschland</ram:Content>
     <ram:SubjectCode>REG</ram:SubjectCode>
+    <ram:Something>
+        <ram:InSomethingElse>just a test for understanding</ram:InSomethingElse>
+    </ram:Something>
 </Invoice>
     "#;
 
-    let invoice: Invoice = from_str(xml).expect("Failed to parse XML");
+    let invoice: Invoice = from_str(xml)?;
     println!("Invoice: {:#?}", invoice);
 
     Ok(())
